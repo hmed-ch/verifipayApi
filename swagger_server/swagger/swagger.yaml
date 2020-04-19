@@ -1,0 +1,291 @@
+---
+swagger: "2.0"
+info:
+  description: "This is verifi API"
+  version: "0.0.1"
+  title: "Verifi API"
+  contact:
+    email: "ahmed@attila.software"
+host: "localhost:8080"
+basePath: "/"
+tags:
+- name: "Check API"
+  description: "The checkout API is used to create a checkout with Attila and update\
+    \ the checkout order during the purchase."
+schemes:
+- "https"
+security:
+- basicAuth: []
+paths:
+  /check/orders:
+    post:
+      tags:
+      - "Check API"
+      summary: "creates an Order"
+      description: "create an exisying Order"
+      operationId: "create_order"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "Order"
+        description: "Order  to add"
+        required: false
+        schema:
+          $ref: "#/definitions/Order"
+      responses:
+        "201":
+          description: "Order created"
+        "400":
+          description: "invalid input, object invalid"
+        "409":
+          description: "an existing Order already exists"
+      x-swagger-router-controller: "swagger_server.controllers.check_api_controller"
+  /check/orders/{OrderId}:
+    get:
+      tags:
+      - "Check API"
+      summary: "read an order from Verifi."
+      description: "By passing in the appropriate options, you can search for\navailable\
+        \ inventory in the system\n"
+      operationId: "getorder"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "OrderId"
+        in: "path"
+        description: "id of the order"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "matching Order"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Order"
+        "400":
+          description: "bad input parameter"
+      x-swagger-router-controller: "swagger_server.controllers.check_api_controller"
+    post:
+      tags:
+      - "Check API"
+      summary: "updates an Order"
+      description: "update an exisying Order"
+      operationId: "update_order"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "OrderId"
+        in: "path"
+        description: "id of the order"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "Order"
+        description: "Order  to update"
+        required: false
+        schema:
+          $ref: "#/definitions/Order"
+      responses:
+        "200":
+          description: "Order updated"
+        "400":
+          description: "invalid input, object invalid"
+        "409":
+          description: "an existing Order already exists"
+      x-swagger-router-controller: "swagger_server.controllers.check_api_controller"
+securityDefinitions:
+  basicAuth:
+    type: "basic"
+definitions:
+  Order:
+    type: "object"
+    required:
+    - "customer"
+    - "merchant_name"
+    - "merchant_urls"
+    - "order_amount"
+    - "order_lines"
+    - "order_tax_amount"
+    - "purchase_country"
+    - "purchase_currency"
+    properties:
+      id:
+        type: "string"
+        format: "uuid"
+        example: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+      merchant_name:
+        type: "string"
+        example: "Orange"
+      purchase_country:
+        type: "string"
+        example: "TN"
+      purchase_currency:
+        type: "string"
+        example: "TND"
+      billing_address:
+        $ref: "#/definitions/Adress"
+      order_amount:
+        type: "integer"
+        example: 300
+      order_tax_amount:
+        type: "integer"
+        example: 30
+      merchant_urls:
+        $ref: "#/definitions/Merchant_urls"
+      customer:
+        $ref: "#/definitions/Customer"
+      order_lines:
+        type: "array"
+        items:
+          $ref: "#/definitions/Order_line"
+    example:
+      order_tax_amount: 30
+      merchant_urls:
+        confirmation: "confirmation"
+        checkout: "checkout"
+        push: "push"
+      purchase_country: "TN"
+      order_amount: 300
+      purchase_currency: "TND"
+      order_lines:
+      - quantity_unit: "quantity_unit"
+        quantity: 0
+        product_url: "product_url"
+        total_amount: 5
+        name: "name"
+        total_tax_amount: 5
+        unit_price: 6
+        tax_rate: 1
+      - quantity_unit: "quantity_unit"
+        quantity: 0
+        product_url: "product_url"
+        total_amount: 5
+        name: "name"
+        total_tax_amount: 5
+        unit_price: 6
+        tax_rate: 1
+      merchant_name: "Orange"
+      billing_address:
+        country: "country"
+        city: "city"
+        adress: "adress"
+        postal_code: "postal_code"
+      id: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+      customer:
+        country: "country"
+        full_name: "full_name"
+        city: "city"
+        phone: "phone"
+        adress: "adress"
+        postal_code: "postal_code"
+        type: "person"
+        email: "email"
+  Adress:
+    type: "object"
+    properties:
+      country:
+        type: "string"
+      city:
+        type: "string"
+      adress:
+        type: "string"
+      postal_code:
+        type: "string"
+    example:
+      country: "country"
+      city: "city"
+      adress: "adress"
+      postal_code: "postal_code"
+  Merchant_urls:
+    type: "object"
+    required:
+    - "checkout"
+    - "push"
+    properties:
+      checkout:
+        type: "string"
+        description: "URL to your checkout page"
+      confirmation:
+        type: "string"
+        description: "URL to your confirmation page. This is where customers will\
+          \ be redirected after completing their purchase."
+      push:
+        type: "string"
+        description: "URL that will be requested when an order is completed. Should\
+          \ be different than checkout and confirmation"
+    example:
+      confirmation: "confirmation"
+      checkout: "checkout"
+      push: "push"
+  Customer:
+    type: "object"
+    properties:
+      full_name:
+        type: "string"
+      country:
+        type: "string"
+      city:
+        type: "string"
+      adress:
+        type: "string"
+      postal_code:
+        type: "string"
+      phone:
+        type: "string"
+      email:
+        type: "string"
+      type:
+        type: "string"
+        enum:
+        - "person"
+        - "organization"
+    example:
+      country: "country"
+      full_name: "full_name"
+      city: "city"
+      phone: "phone"
+      adress: "adress"
+      postal_code: "postal_code"
+      type: "person"
+      email: "email"
+  Order_line:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        description: "Descriptive item name."
+      quantity:
+        type: "integer"
+      quantity_unit:
+        type: "string"
+        description: "Unit used to describe the quantity, e.g. kg, pcs... If defined\
+          \ has to be 1-8 characters"
+      product_url:
+        type: "string"
+      unit_price:
+        type: "integer"
+      tax_rate:
+        type: "integer"
+        description: "Non-negative. In percent, two implicit decimals. I.e 2500 =\
+          \ 25%. (max value 10000)"
+      total_amount:
+        type: "integer"
+      discount:
+        type: "integer"
+      total_tax_amount:
+        type: "integer"
+    example:
+      quantity_unit: "quantity_unit"
+      quantity: 0
+      product_url: "product_url"
+      total_amount: 5
+      name: "name"
+      total_tax_amount: 5
+      unit_price: 6
+      tax_rate: 1
